@@ -1,0 +1,39 @@
+@layout('main')
+@set('title', 'Login')
+@section('content')
+
+
+<div class="container mt-5">
+  <div class="card">
+    <div class="card-body">
+      <h1 class="card-title text-center">Register</h1>
+
+      <form action="/user/login" method="post">
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+
+        @if (flashMessages.has('emailError'))
+        <p class="text-danger">{{flashMessages.get('emailError')}}</p>
+        @end
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+
+        @if (flashMessages.has('passwordError'))
+        <p class="text-danger">{{flashMessages.get('passwordError')}}</p>
+        @end
+
+
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+      </form>
+
+      <p class="text-center mt-3">Don't have an account? <a href="/user/register">Register</a></p>
+    </div>
+  </div>
+</div>
+@endsection
