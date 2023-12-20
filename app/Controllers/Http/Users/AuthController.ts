@@ -15,31 +15,15 @@ export default class AuthController {
       messages: registerValidationMessages,
       bail: false,
     })
-    // TODO FIX validator
-    // const exitingUser = await User.findBy('email', email)
-    // const errors: { email?: string; password?: string } = {}
-
-    // if (exitingUser) {
-    //   errors.email = 'User with such email already exist'
-    // }
-
-    // if (Object.keys(errors).length > 0) {
-    //   session.flash({
-    //     errors: errors,
-    //   })
-    //   return response.redirect().back()
-    // }
 
     const user = await User.create({ username, email, password })
-    const a = await auth.login(user, true)
-    console.log(a)
+    await auth.login(user)
 
-    // session.flash({ errors: email })
     return response.redirect('/')
   }
 
   public async login({ request, response, auth, session }: HttpContextContract) {
-    const { email, password } = request.all()
+    const { email, password, rememberMe } = request.all()
     const user = await User.query().where('email', email).first()
 
     if (!user) {
@@ -52,7 +36,7 @@ export default class AuthController {
       return response.redirect().back()
     }
 
-    await auth.login(user)
+    await auth.login(user, rememberMe)
 
     if (auth.isLoggedIn) {
       return response.redirect('/')

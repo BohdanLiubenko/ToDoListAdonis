@@ -1,0 +1,171 @@
+@layout('main')
+@set('title', 'Admin')
+@section('content')
+@!component('navbar')
+<div class="container mt-5">
+  <h1>Admin Dashboard</h1>
+  <ul class="list-group-flush mt-3">
+    @each(user in users)
+    <li class="list-group-item">
+      <div class="container">
+        <div class="row align-items-start">
+          <label for="{{ `user-${user.id}` }}" class="editable-label col">
+            <span class="editable" contenteditable="true" data-userid="{{ user.id }}" data-field="username">{{
+              user.username }}
+            </span>
+            <span class="editable" contenteditable="true" data-userid="{{ user.id }}"
+              data-field="email">{{user.email}}</span>
+            - Role:
+            <select class="editable" id="{{ `user-role-${user.id}` }}" data-userid="{{ user.id }}">
+              <option value="user" {{ user.role==='user' ? 'selected' : '' }}>User</option>
+              <option value="admin" {{ user.role==='admin' ? 'selected' : '' }}>Admin</option>
+            </select>
+            <button class="btn btn-danger btn-sm float-right ml-2"
+              onclick="handleDelete('{{ user.id }}', 'user')">Delete</button>
+          </label>
+        </div>
+      </div>
+      @each(todo in user.toDoLists)
+      <ul class="list-group-flush">
+        <li class="list-group-item">
+          <input type="checkbox" id="{{ `todo-${todo.id}` }}" data-todoid="{{ todo.id }}" autocomplete="off"
+            {{todo.is_done? "checked" : "" }}>
+          <label for="{{ `todo-${todo.id}` }}" class="editable-label {{todo.is_done? " crossed-out" : "3" }}">
+            <span class="editable" contenteditable="true" data-todoid="{{ todo.id }}" data-field="name">
+              {{ todo.name }}
+            </span> -
+            <span class="editable" contenteditable="true" data-todoid="{{ todo.id }}" data-field="description">
+              @if(todo.description)
+              {{ todo.description }}
+              @else
+              Enter description here
+              @endif
+            </span>
+            <button class="btn btn-danger btn-sm float-right ml-2"
+              onclick="handleDelete('{{ todo.id }}','todo')">Delete</button>
+          </label>
+        </li>
+      </ul>
+      @endeach
+    </li>
+    @endeach
+  </ul>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const editableLabels = document.querySelectorAll('.editable-label .editable');
+
+    async function handleEdit(event) {
+      const userId = event.target.getAttribute('data-userid');
+      const todoId = event.target.getAttribute('data-todoid');
+
+      try {
+        if(todoId){
+        const checkbox = document.getElementById(`todo-${todoId}`);
+        const name = document.querySelector(`[data-todoid="${todoId}"][data-field="name"]`).textContent.trim();
+        const description = document.querySelector(`[data-todoid="${todoId}"][data-field="description"]`).textContent.trim();
+        const isDone = checkbox.checked;
+        await fetch(`/todos/${todoId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          redirect: 'manual',
+          body: JSON.stringify({
+            name: name,
+            description: description,
+            isDone: isDone,
+          }),
+        }).then(response => {
+          if (response.status == 200) {
+            window.location.href = '/admin';
+          }
+        });
+
+        // Optionally, you can update the UI here based on the response
+        console.log(`Todo item ${todoId} updated`);
+      } else if(userId){
+        const username = document.querySelector(`[data-userid="${userId}"][data-field="username"]`).textContent.trim();
+        const email = document.querySelector(`[data-userid="${userId}"][data-field="email"]`).textContent.trim();
+        const roleSelect = document.getElementById(`user-role-${userId}`);
+        const role = roleSelect.options[roleSelect.selectedIndex].value;
+        console.log(role);
+        await fetch(`/admin/${userId}`,{
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          redirect: 'manual',
+          body: JSON.stringify({
+            username: username,
+            email: email,
+            role: role,
+          }),
+        }).then(response =>{
+          if(response.status===200){
+            window.location.href = '/admin';
+          }
+        })
+        console.log(`User ${userId} updated`)
+      }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    editableLabels.forEach(editable => {
+      editable.addEventListener('blur', handleEdit);
+
+      // Prevent checking the checkbox when clicking on the span for editing
+      editable.addEventListener('click', (event) => {
+        if (event.target.classList.contains('editable')) {
+          event.preventDefault();
+        }
+      });
+    });
+
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+      checkbox.addEventListener('change', handleEdit);
+    });
+
+    document.querySelectorAll('select.editable').forEach(select=>{
+      select.addEventListener('change', handleEdit)
+    });
+  });
+  async function handleDelete(id, type) {
+    if(type === 'todo'){
+    if (confirm('Are you sure you want to delete this todo?')) {
+      try {
+        await fetch(`/todos/${id}`, {
+          method: 'DELETE',
+        }).then(res => {
+          if (res.status == 200) {
+            window.location.href = '/admin';
+          }
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  } else if(type === 'user'){
+    if (confirm('Are you sure you want to delete this user?')) {
+      try {
+        await fetch(`/admin/${id}`, {
+          method: 'DELETE',
+        }).then(res => {
+          if (res.status == 200) {
+            window.location.href = '/admin';
+          }
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+  }
+</script>
+@endsection

@@ -10,7 +10,7 @@ export default class ToDoListsController {
     return response.redirect('/')
   }
 
-  public async update({ params, request, response, view }: HttpContextContract) {
+  public async update({ params, request, response }: HttpContextContract) {
     const { name, description, isDone } = request.all()
     await ToDoList.query().where('id', params.id).update({ name, description, is_done: isDone })
 

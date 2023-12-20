@@ -18,9 +18,7 @@ export const registerValidation = schema.create({
   password: schema.string({ trim: true }, [
     rules.required(),
     rules.minLength(8),
-    rules.regex(/[a-z]/),
-    rules.regex(/[A-Z]/),
-    rules.regex(/[0-9]/g),
+    rules.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
   ]),
 })
 

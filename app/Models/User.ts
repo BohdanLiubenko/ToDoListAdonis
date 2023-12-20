@@ -23,7 +23,7 @@ export default class User extends BaseModel {
   @column()
   public rememberMeToken: string | null
 
-  @hasMany(() => ToDoList)
+  @hasMany(() => ToDoList, { foreignKey: 'user_id' })
   public toDoLists: HasMany<typeof ToDoList>
 
   @column.dateTime({ autoCreate: true })

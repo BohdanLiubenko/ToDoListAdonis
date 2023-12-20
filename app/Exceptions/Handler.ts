@@ -27,4 +27,12 @@ export default class ExceptionHandler extends HttpExceptionHandler {
   constructor() {
     super(Logger)
   }
+
+  public async handle(error: any, ctx: HttpContextContract) {
+    if (error.status === 404) {
+      return ctx.response.redirect().back()
+    }
+
+    return super.handle(error, ctx)
+  }
 }
