@@ -16,6 +16,7 @@ services:
       - net
     volumes:
       - postgresql-persistence:/bitnami/postgresql
+      
   adonis-app:
     container_name: adonis-app
     build:
@@ -30,6 +31,7 @@ services:
       - postgresql
     environment:
       PG_HOST: postgresql
+    command: bash -c "node ace migration:fresh --seed && npm run dev"
 
 
 volumes:
